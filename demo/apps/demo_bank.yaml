@@ -1,0 +1,85 @@
+# App profile for "demo-core-banking" (the mock teller app).
+# Shared by every capability recorded against this product: how to sign on, which
+# app-wide states can interrupt any flow, and what must never appear in screenshots.
+schema_version: 1
+product: demo-core-banking
+product_version: "3.4"
+base_url: http://localhost:5001
+secrets: [MOCKBANK_USER, MOCKBANK_PASS]
+
+login:
+  - id: login.s1
+    intent: Open the sign-on page
+    action: navigate
+    url: "{{app.base_url}}/login"
+    expect: {timeout_ms: 10000, text_visible: "Sign On"}
+  - id: login.s2
+    intent: Enter the teller user ID
+    action: fill
+    target:
+      strategies:
+        - {by: adjacent_label, text: "User ID:", control: input}
+        - {by: css, value: "input[name=u]"}
+      fingerprint: {tag: input, type: text}
+    value: "{{secrets.MOCKBANK_USER}}"
+  - id: login.s3
+    intent: Enter the teller password
+    action: fill
+    target:
+      strategies:
+        - {by: adjacent_label, text: "Password:", control: input}
+        - {by: css, value: "input[type=password]"}
+      fingerprint: {tag: input, type: password}
+    value: "{{secrets.MOCKBANK_PASS}}"
+  - id: login.s4
+    intent: Sign on
+    action: click
+    target:
+      strategies:
+        - {by: role, role: button, name: "Sign On"}
+      fingerprint: {tag: input, type: submit}
+    expect: {timeout_ms: 15000, text_visible: "Member Search"}
+
+conditions:
+  - code: SESSION_EXPIRED
+    kind: recoverable
+    when: {text_visible: "Please sign on again"}
+    message: The teller session expired; sign on again and restart the flow.
+    handler: {do: relogin}
+  - code: SYSTEM_NOTICE
+    kind: recoverable
+    when: {text_visible: "System Notice"}
+    message: A maintenance notice interstitial; acknowledge it.
+    handler:
+      do: dismiss
+      target:
+        frame: [main]
+        strategies:
+          - {by: role, role: button, name: "OK"}
+  - code: LOGIN_FAILED
+    kind: failure
+    when: {text_visible: "Invalid user ID or password"}
+    message: The configured teller credentials were rejected.
+  - code: PERMISSION_DENIED
+    kind: business
+    when: {text_visible: "Insufficient privileges"}
+    message: The signed-on teller is not allowed to view this member.
+  # the product's own messages, catalogued once and reused by every capability
+  - code: RECORD_NOT_FOUND
+    kind: business
+    when: {text_visible: "No member found"}
+    message: No member matches the search.
+  - code: VALIDATION_ERROR
+    kind: business
+    when: {text_visible: "Validation error"}
+    message: The application rejected the submitted values.
+  - code: HTTP_500
+    kind: failure
+    when: {text_visible: "Internal Server Error"}
+    message: The application returned a server error.
+
+mask:
+  - frame: [main]
+    strategies: [{by: adjacent_label, text: "Tax ID:", control: cell}]
+  - frame: [main]
+    strategies: [{by: adjacent_label, text: "Name:", control: cell}]

@@ -1,0 +1,20 @@
+{
+  "run_id": "20260917T202642-531f0c",
+  "capability_id": "demo_bank.lookup_balance",
+  "capability_version": "1.2.0",
+  "duration_ms": 886,
+  "warnings": [],
+  "status": "failure",
+  "code": "HTTP_500",
+  "message": "The application returned a server error.",
+  "step_id": "s2",
+  "expected": "text visible \"Member Detail\"",
+  "observed": "[nav] CoreOne Member Search Sign Off | [main] HTTP 500 - Internal Server Error The server encountered an unexpected condition. Reference ERR-5XX.",
+  "log_files": [
+    "screenshots/0006-s2.png",
+    "frames/0007-s2-top.html",
+    "frames/0008-s2-nav.html",
+    "frames/0009-s2-main.html"
+  ],
+  "recoveries_attempted": []
+}
