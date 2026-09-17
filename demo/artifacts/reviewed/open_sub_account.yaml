@@ -1,0 +1,84 @@
+# Hand-authored reference capability with an irreversible step, used by the test-suite.
+schema_version: 1
+capability:
+  id: demo_bank.open_sub_account
+  version: 1.0.0
+  summary: Open a sub-account for a member and return the new account number
+  app: {product: demo-core-banking, product_version: "3.4", surface: web}
+  status: approved
+  provenance: {reviewed_by: test-author}
+inputs:
+  member_id: {type: string, pattern: '^\d{5}$', sensitivity: pii}
+  account_type: {type: enum, values: [savings, checking]}
+  initial_deposit: {type: decimal, min: "0.01", sensitivity: financial}
+outputs:
+  new_account_number: {type: string, sensitivity: pii, from_step: s8}
+requires: [session.authenticated]
+steps:
+  - id: s1
+    intent: Enter the member ID in the search form
+    action: fill
+    target:
+      frame: [main]
+      strategies:
+        - {by: adjacent_label, text: "Member ID:", control: input}
+      fingerprint: {tag: input, type: text, name: Member ID}
+    value: "{{inputs.member_id}}"
+  - id: s2
+    intent: Run the search
+    action: click
+    target:
+      frame: [main]
+      strategies: [{by: role, role: button, name: Search}]
+    expect: {timeout_ms: 10000, text_visible: Member Detail}
+  - id: s3
+    intent: Start opening a sub-account
+    action: click
+    target:
+      frame: [main]
+      strategies: [{by: role, role: button, name: Open Sub-Account}]
+    expect: {timeout_ms: 10000, text_visible: "Initial Deposit:"}
+  - id: s4
+    intent: Choose the account type
+    action: select
+    target:
+      frame: [main]
+      strategies: [{by: adjacent_label, text: "Account Type:", control: select}]
+      fingerprint: {tag: select}
+    value: "{{inputs.account_type}}"
+  - id: s5
+    intent: Enter the initial deposit
+    action: fill
+    target:
+      frame: [main]
+      strategies: [{by: adjacent_label, text: "Initial Deposit:", control: input}]
+      fingerprint: {tag: input, type: text}
+    value: "{{inputs.initial_deposit}}"
+  - id: s6
+    intent: Continue to the review page
+    action: click
+    target:
+      frame: [main]
+      strategies: [{by: role, role: button, name: Continue}]
+    expect: {timeout_ms: 10000, text_visible: Review Sub-Account}
+  - id: s7
+    intent: Confirm opening the account
+    action: click
+    risk: irreversible
+    target:
+      frame: [main]
+      strategies: [{by: role, role: button, name: Confirm}]
+    expect: {timeout_ms: 10000, text_visible: Account opened successfully}
+  - id: s8
+    intent: Read the new account number
+    action: extract
+    output: new_account_number
+    target:
+      frame: [main]
+      strategies: [{by: adjacent_label, text: "New Account Number:", control: cell}]
+outcomes:
+  - code: MEMBER_NOT_FOUND
+    kind: business
+    when: {text_visible: No member found}
+    steps: [s2]
+success: {text_visible: Account opened successfully}

@@ -1,0 +1,25 @@
+# Guardrails for the mock core-banking app. Anything not listed is denied.
+allowed_origins:
+  - http://localhost:5001
+  - http://127.0.0.1:5001
+allowed_paths:
+  - /
+  - /login
+  - /nav
+  - /search
+  - /member
+  - /notice/ack
+  - /open
+  - /open/review
+  - /open/confirm
+allowed_actions: [navigate, click, fill, select, extract, wait]
+# Clicking a control whose name matches one of these is irreversible: blocked for the
+# discovery agent (a human decides), and needs explicit approval on replay.
+irreversible_patterns:
+  - \bconfirm\b
+  - \bsubmit payment\b
+  - \btransfer\b
+  - \bdelete\b
+  - \bclose account\b
+  - \bapprove\b
+  - \bwire\b

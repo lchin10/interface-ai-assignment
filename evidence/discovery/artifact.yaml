@@ -1,0 +1,97 @@
+schema_version: 1
+capability:
+  id: demo_bank.lookup_balance
+  version: 1.1.0
+  summary: Look up member {member_id} and read their current savings balance
+  app:
+    product: demo-core-banking
+    product_version: '3.4'
+    surface: web
+  status: draft
+  provenance:
+    run_id: 20260917T194905-6dfe01
+    model: claude-opus-5
+    recorded_at: '2026-09-17T19:49:22.971174Z'
+inputs:
+  member_id:
+    type: string
+    description: Supplied by the caller for each invocation
+    sensitivity: pii
+outputs:
+  savings_balance:
+    type: decimal
+    description: Read the savings account balance as the requested output.
+    sensitivity: financial
+    from_step: s3
+requires:
+- session.authenticated
+steps:
+- id: s1
+  intent: Enter the member ID to search for the member record.
+  action: fill
+  target:
+    frame:
+    - main
+    strategies:
+    - by: adjacent_label
+      text: 'Member ID:'
+      control: input
+    - by: css
+      value: body > font:nth-of-type(1) > table:nth-of-type(1) > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(1)
+        > form:nth-of-type(1) > table:nth-of-type(1) > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(2) > input:nth-of-type(1)
+    fingerprint:
+      tag: input
+      type: text
+      role: textbox
+      name: Member ID
+  value: '{{inputs.member_id}}'
+  risk: safe
+  recorded_from: agent
+- id: s2
+  intent: Submit the search to open the member record.
+  action: click
+  target:
+    frame:
+    - main
+    strategies:
+    - by: role
+      role: button
+      name: Search
+    - by: css
+      value: body > font:nth-of-type(1) > table:nth-of-type(1) > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(1)
+        > form:nth-of-type(1) > table:nth-of-type(1) > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(2) > input:nth-of-type(1)
+    fingerprint:
+      tag: input
+      type: submit
+      role: button
+      name: Search
+  risk: safe
+  expect:
+    text_visible: Member Detail
+    timeout_ms: 15000
+  recorded_from: agent
+- id: s3
+  intent: Read the savings account balance as the requested output.
+  action: extract
+  target:
+    frame:
+    - main
+    strategies:
+    - by: table_cell
+      row: Savings
+      column: Balance
+    - by: adjacent_label
+      text: Savings
+      control: cell
+    - by: css
+      value: body > font:nth-of-type(1) > table:nth-of-type(1) > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(1)
+        > table:nth-of-type(2) > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(3)
+    fingerprint:
+      tag: td
+      role: cell
+  output: savings_balance
+  risk: safe
+  recorded_from: agent
+outcomes: []
+success:
+  text_visible: Member Detail

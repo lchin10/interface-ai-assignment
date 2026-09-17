@@ -1,0 +1,11 @@
+{
+  "id": "int-be7c1670",
+  "run_id": "[ACCOUNT]T202651-f51804",
+  "subject": "demo",
+  "step_id": "s7",
+  "kind": "approval",
+  "reason": "Irreversible step s7 needs approval: Confirm opening the account",
+  "url": "http://127.0.0.1:57147/",
+  "screenshot": "screenshots/0011-s7.png",
+  "requested_at": "2026-09-17T20:26:53.043067Z"
+}

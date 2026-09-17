@@ -1,0 +1,28 @@
+[project]
+name = "automation"
+version = "0.1.0"
+description = "Record-once / replay-many computer-use automation for legacy back-office apps"
+requires-python = ">=3.11"
+dependencies = [
+    "playwright>=1.47",
+    "anthropic>=0.40",
+    "pydantic>=2.8",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+demo = ["flask>=3.0"]
+dev = ["pytest>=8.0", "flask>=3.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["automation"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = ["live: needs ANTHROPIC_API_KEY and makes a real model call"]
+addopts = "-m 'not live'"
