@@ -1,9 +1,24 @@
 # Computer-use automation for legacy back-office apps
 
-A model drives a legacy banking UI once to work out how a task is done. That run is recorded as a
-typed, versioned **capability artifact**. From then on the artifact is **replayed deterministically**
-with no model in the loop, returning typed outputs, known business outcomes, or a debuggable failure —
-and handing the live session to a human when it cannot safely continue.
+Banks and credit unions run back-office software with no API — core banking screens, servicing tools,
+admin consoles where the only way in is to drive the UI the way a teller would. **This is the layer that
+gives an AI agent hands for those apps.**
+
+A task like *"look up member 10001 and read their savings balance"* is handed to a model once. It reads
+the screen, clicks and types its way through the real application, and the successful run is captured as
+a **capability**: a typed, versioned contract stating what the flow needs, what it returns, how each
+control is found, and how you know it worked.
+
+Every invocation after that is a **deterministic replay** of that contract, with no model involved —
+cheap enough to call thousands of times, predictable enough to trust with money.
+
+The interesting part is what happens when the app misbehaves. "No such member" comes back as a result
+rather than an error. A maintenance popup or an expired session is recovered from. An irreversible click
+is refused without approval. Anything genuinely stuck is handed to a human operator **in the same live
+browser session**, who finishes the step by hand and gives control back.
+
+The target here is a deliberately hostile mock bank — framesets, table layouts, no test ids — so the
+failure modes are real without touching a real institution's data.
 
 ```
 goal ──▶ discovery (LLM)  ──▶  capability artifact (YAML)  ──▶  replay (no LLM)  ──▶ result
